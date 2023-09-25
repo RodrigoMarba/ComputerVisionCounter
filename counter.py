@@ -28,10 +28,10 @@ def box_previous_frames(previous_frame_detections, current_box, current_detectio
 
 
 def count_obj(obj_detect, boxes, classes_ids, production, previous_frame_detections, frames_before_current):
-    # cria o dicionário de detecções do frame atual
+    # creates the detection dictionary for the current frame
     current_detections = {}
 
-    # verifica se existem objetos detectados na frame
+    # checks if there are objects detected in the frame
     if len(obj_detect) > 0:
 
         for i in obj_detect.flatten():
