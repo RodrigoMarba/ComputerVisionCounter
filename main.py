@@ -5,26 +5,26 @@ from counter import count_obj
 
 start = time.time()
 
-# carrega modelo usado na detecção
+# loads model used in detection
 net = cv2.dnn.readNetFromDarknet("yolov4_custom.cfg", "yolov4_custom_best.weights")
 
-# le os objetos que o modelo foi treinado para detectar e armazena no array
+# reads the objects that the model was trained to detect and stores them in an array
 with open("obj.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
 
-# definir os layers de saída para fazer a detecção
+# defines the output layers to perform the detection
 layer_names = net.getLayerNames()
 output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-# define e lê o video
+# define and read the video
 cap = cv2.VideoCapture("linha_cut.mp4")
-ret, video = cap.read()  # realiza a leitura do vídeo
+ret, video = cap.read()  # reads the video
 
-# inicializa parâmetros
-v_height, v_width, v_channels = video.shape  # define altura, largura e canais do vídeo
-fps = cap.get(cv2.CAP_PROP_FPS)  # define FPS do vídeo
-dt = float(fps / 60)  # define o dt usado no filtro de Kalman
-frames_before_current = 3  # frames que vai ler para correspondência de caracteristicas
+# initialize parameters
+v_height, v_width, v_channels = video.shape  # defines height, width and channels of the video
+fps = cap.get(cv2.CAP_PROP_FPS)  # defines video FPS
+dt = float(fps / 60)  # defines the dt used in the Kalman filter
+frames_before_current = 3  # frames that will be read to match characteristics
 
 width = int(v_width * 60 / 100)
 height = int(v_height * 60 / 100)
@@ -36,15 +36,15 @@ classes_ids = []
 threshold = 0.9
 threshold_NMS = 0.2
 
-production = 0  # inicia contagem em 0
+production = 0  # starts counting at 0
 previous_frame_detections = [{(0, 0): 0} for i in
                              range(
-                                 frames_before_current)]  # cria lista de dicionário que vai armazenar as detecções (Xo, Yo, Lk, Hk)
+                                 frames_before_current)]  # creates the dictionary list that will store the detections (Xo, Yo, Lk, Hk)
 
-# utilizar quando for salvar o vídeo
-# nome_arquivo = 'resultado_cut.avi'
+# use when saving the video
+# file_name = 'result_cut.avi'
 # fourcc = cv2.VideoWriter_fourcc(*'XVID')  # MP4V
-# out = cv2.VideoWriter(nome_arquivo, fourcc, fps, (v_width, v_height))
+# out = cv2.VideoWriter(file_name, fourcc, fps, (v_width, v_height))
 
 while cv2.waitKey(1) < 0:
 
@@ -56,7 +56,7 @@ while cv2.waitKey(1) < 0:
     net.setInput(blob)
     layer_outputs = net.forward(output_layers)
 
-    # zera referência a cada detecção:
+    # resets reference for each detection:
     current_boxes = []
     boxes = []
     confidences = []
@@ -103,11 +103,11 @@ while cv2.waitKey(1) < 0:
     # out.write(frame)
 
 
-    # exclui todas as detecções do frame utilizado no kalman anterior
-    # if  se não tiver nenhuma detecção ele pode zoar o role -> tem que ver isso ai
+    # excludes all detections of the frame used in the previous kalman
+    # if there is no detection it can unexpected behavior
     previous_frame_detections.pop(0)
 
-    # atualiza a lista de detecções para utilizar no kalmna seguinte
+    # updates the detection list for use in the next kalman
     previous_frame_detections.append(current_detections)
 
 end = time.time()
